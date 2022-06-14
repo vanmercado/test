@@ -51,7 +51,6 @@ const TeamMemberProficiency = SkillsMatrixConnection.define(
     approved_by: {
       type: Sequelize.STRING,
     },
-    // task
     years_experience: {
       type: Sequelize.INTEGER,
     },
@@ -59,7 +58,7 @@ const TeamMemberProficiency = SkillsMatrixConnection.define(
       type: Sequelize.INTEGER,
     },
     lastused_experience: {
-      type: Sequelize.STRING,
+      type: Sequelize.INTEGER,
     },
   },
   {

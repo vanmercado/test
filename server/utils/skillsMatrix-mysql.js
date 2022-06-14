@@ -9,6 +9,15 @@ const mysql = require("mysql");
 //   database: "dev",
 // };
 
+// let dbConfig = {
+//   // Default is 10
+//   connectionLimit: 10,
+//   host: "localhost",
+//   user: "root",
+//   password: "telus@mysql",
+//   database: "skills_matrix_dev",
+// };
+
 let dbConfig = {
   // Default is 10
   connectionLimit: 10,
