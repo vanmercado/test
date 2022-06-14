@@ -1,7 +1,7 @@
 const { Sequelize } = require("sequelize");
 
 const dbName = "skills_matrix";
-const SkillsMatrixConnection = new Sequelize(dbName, "root", "telus@mysql", {
+const SkillsMatrixConnection = new Sequelize(dbName, "root", "101800", {
   host: "localhost",
   dialect: "mysql",
   logging: false,

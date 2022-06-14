@@ -29,6 +29,7 @@ module.exports = (app) => {
         FROM login_history
 	        INNER JOIN team_member
 	          ON login_history.email = team_member.email
+            GROUP BY SUBSTR(login_history.login_time ,1,10), team_member.email
             ORDER BY login_history.login_time DESC;
         `;
       const result = await db.query(sql);

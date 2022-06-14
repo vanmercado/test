@@ -20,9 +20,6 @@ function AddSkillButton(props) {
   const [isAction, setIsAction] = useState("");
   const [currSkill, setCurrSkill] = useState("");
   const [currProficiency, setCurrProficiency] = useState("");
-  const [years, setYears] = useState("");
-  const [months, setMonths] = useState("");
-  const [lastUsed, setLastUsed] = useState("");
 
   const skillButtonState = {
     isAction,
@@ -32,12 +29,6 @@ function AddSkillButton(props) {
     setCurrSkill,
     currProficiency,
     setCurrProficiency,
-    years,
-    setYears,
-    months,
-    setMonths,
-    lastUsed,
-    setLastUsed,
   };
 
   // Only trigger api call once using the email of the user

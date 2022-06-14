@@ -857,4 +857,396 @@ module.exports = (app) => {
       await connection.release();
     }
   });
+
+  // custom skill gap analysis graph data end
+
+  // REPORTS START
+  app.get("/api/tm/getIdealSkillSet/:email", async (req, res) => {
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`
+        SELECT s.skill_id AS id, s.skill_desc AS skillname
+          FROM team_member AS tm
+            LEFT JOIN ideal_proficiency AS ip
+              ON tm.job_profile_id = ip.job_profile_id
+            LEFT JOIN skill AS s
+              ON s.skill_id = ip.skill_id
+          WHERE ip.job_category_id = 0 AND tm.email = '${req.params.email}' 
+          ORDER BY s.skill_desc;
+      `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+  // ****** START Get all the TM count of skills status ******
+  // Get all the TM count of skills status
+  app.get("/api/mgr/getTMSkillStatusCount", async (req, res) => {
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`
+        Select
+          'ALL' as tm_name,
+          SUM(IF(team_member_proficiency.approval_flag = "A"|| team_member_proficiency.approval_flag = "Y", 1, 0)) AS approved,
+          SUM(IF(team_member_proficiency.approval_flag = "P", 1, 0)) AS pending
+        FROM
+          team_member_proficiency
+        JOIN
+          team_member
+        ON
+          team_member.tm_id = team_member_proficiency.tm_id;
+      `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+
+  
+  // Get SLT List
+  app.get("/api/mgr/getSLTList", async (req, res) => {
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`
+        SELECT
+          team_member.tm_id,
+          team_member.tm_name,
+          team_member.team_lead,
+          team_member.is_role
+        FROM 
+          team_member	
+        JOIN
+          om
+        on
+          om.om_name = team_member.tm_name;
+      `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+
+  // Get Team Manager List with Team Leader or Member Skill Status Count
+  app.get("/api/mgr/skillStatusCount/getTMListBySLT/:sltId", async (req, res) => {
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`
+      SELECT
+        team_member.tm_name,
+        team_member.tm_id,
+        team_member.team_lead,
+        team_member.is_role,
+        SUM(IF(team_member_proficiency.approval_flag = "A"|| team_member_proficiency.approval_flag = "Y", 1, 0)) AS approved,
+        SUM(IF(team_member_proficiency.approval_flag = "P", 1, 0)) AS pending
+      FROM
+        team_member_proficiency
+      RIGHT JOIN
+        team_member
+      ON
+        team_member.tm_id = team_member_proficiency.tm_id
+      WHERE
+        team_member.team_lead = (Select team_member.tm_id FROM team_member WHERE team_member.tm_id = ${req.params.sltId})
+      GROUP BY
+        team_member.tm_id;
+      `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) { 
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });  
+
+  // Get Team Leader and Member List and Skills Status Count by Team Manager
+  app.get("/api/mgr/skillStatusCount/getTMListBySLT/:sltId/getTMListByTM/:tmId", async (req, res) => {
+    
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`
+      SELECT
+        team_member.tm_name,
+        team_member.tm_id,
+        team_member.team_lead,
+        team_member.is_role,
+        SUM(IF(team_member_proficiency.approval_flag = "A"|| team_member_proficiency.approval_flag = "Y", 1, 0)) AS approved,
+        SUM(IF(team_member_proficiency.approval_flag = "P", 1, 0)) AS pending
+      FROM
+        team_member_proficiency
+      RIGHT JOIN
+        team_member
+      ON
+        team_member.tm_id = team_member_proficiency.tm_id
+      WHERE
+        team_member.team_lead = (SELECT team_member.tm_id FROM team_member WHERE team_member.tm_id = ${req.params.tmId} AND team_member.team_lead = ${req.params.sltId})
+      GROUP BY
+        team_member.tm_id;
+      `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+
+  // Get Team Leader and Member List and Skills Status Count by Team Manager
+  app.get("/api/mgr/getTMListByTM/:tmId/getTMListByTL/:tlId", async (req, res) => {
+    
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`
+      SELECT
+        team_member.tm_name,
+        team_member.tm_id,
+        team_member.team_lead,
+        team_member.is_role,
+        SUM(IF(team_member_proficiency.approval_flag = "A"|| team_member_proficiency.approval_flag = "Y", 1, 0)) AS approved,
+        SUM(IF(team_member_proficiency.approval_flag = "P", 1, 0)) AS pending
+      FROM
+        team_member_proficiency
+      RIGHT JOIN
+        team_member
+      ON
+        team_member.tm_id = team_member_proficiency.tm_id
+      WHERE
+        team_member.team_lead = 
+        (SELECT 
+            team_member.tm_id 
+          FROM 
+            team_member 
+          WHERE 
+            team_member.tm_id = ${req.params.tlId} 
+              AND 
+            team_member.team_lead = ${req.params.tmId} 
+        )
+      GROUP BY
+        team_member.tm_id;
+      `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+
+  // ****** END Get all the TM count of skills status ******
+
+  // ****** START Get the Team Member DataList of skills status ******
+
+  // Get Team Member DataList per SLT
+  app.get("/api/mgr/dataList/getTMListBySLT/:sltId", async (req, res) => {
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`SELECT
+        team_member.tm_name,
+        team_member.email,
+        skill.skill_desc,
+        tm_lead.tm_name as team_lead,
+      CASE
+        WHEN team_member_proficiency.approval_flag = "A" || team_member_proficiency.approval_flag = "Y" THEN "Approved"
+        WHEN team_member_proficiency.approval_flag = "P" THEN "Pending"
+      END AS status
+      FROM
+        team_member_proficiency
+      JOIN
+        skill
+      ON
+        skill.skill_id = team_member_proficiency.skill_id
+      JOIN
+        team_member
+      ON
+        team_member.tm_id = team_member_proficiency.tm_id
+      JOIN
+        team_member tm_lead
+      ON
+        team_member.team_lead = tm_lead.tm_id
+      
+      WHERE
+        team_member.team_lead = 
+          (
+          Select 
+            team_member.tm_id 
+          FROM 
+            team_member 
+          WHERE 
+            team_member.tm_id = ${req.params.sltId}
+        );
+    `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+
+  // Get Team Member DataList per TM
+  app.get("/api/mgr/dataList/getTMListBySLT/:sltId/getTMListByTM/:tmId", async (req, res) => {
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`SELECT
+        team_member.tm_name,
+        team_member.email,
+        skill.skill_desc,
+        tm_lead.tm_name as team_lead,
+      CASE
+        WHEN team_member_proficiency.approval_flag = "A" || team_member_proficiency.approval_flag = "Y" THEN "Approved"
+        WHEN team_member_proficiency.approval_flag = "P" THEN "Pending"
+      END AS status
+      FROM
+        team_member_proficiency
+      JOIN
+        skill
+      ON
+        skill.skill_id = team_member_proficiency.skill_id
+      JOIN
+        team_member
+      ON
+        team_member.tm_id = team_member_proficiency.tm_id
+      JOIN
+        team_member tm_lead
+      ON
+        team_member.team_lead = tm_lead.tm_id
+      
+      WHERE
+        team_member.team_lead = 
+          (
+          Select 
+            team_member.tm_id 
+          FROM 
+            team_member 
+          WHERE 
+            team_member.tm_id = ${req.params.tmId} and team_member.team_lead = ${req.params.sltId}
+        );
+    `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+
+  // Get Team Member DataList per TM
+  app.get("/api/mgr/dataList/getTMListByTM/:tmId/getTMListByTL/:tlId", async (req, res) => {
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`SELECT
+        team_member.tm_name,
+        team_member.email,
+        skill.skill_desc,
+        tm_lead.tm_name as team_lead,
+      CASE
+        WHEN team_member_proficiency.approval_flag = "A" || team_member_proficiency.approval_flag = "Y" THEN "Approved"
+        WHEN team_member_proficiency.approval_flag = "P" THEN "Pending"
+      END AS status
+      FROM
+        team_member_proficiency
+      JOIN
+        skill
+      ON
+        skill.skill_id = team_member_proficiency.skill_id
+      JOIN
+        team_member
+      ON
+        team_member.tm_id = team_member_proficiency.tm_id
+      JOIN
+        team_member tm_lead
+      ON
+        team_member.team_lead = tm_lead.tm_id
+      
+      WHERE
+        team_member.team_lead = 
+          (
+          Select 
+            team_member.tm_id 
+          FROM 
+            team_member 
+          WHERE 
+            team_member.tm_id = ${req.params.tlId} and team_member.team_lead = ${req.params.tmId}
+        );
+    `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+  
+  // Get all the TM DataList of skills status
+  app.get("/api/mgr/dataList/getTMSkillStatus", async (req, res) => {
+    // Create a connection to the database
+    const connection = await skillsMatrixMysql.connection();
+
+    try {
+      const result = await connection.query(`
+      Select
+        team_member.tm_name,
+        team_member.email,
+        skill.skill_desc,
+        tm_lead.tm_name as team_lead,
+          CASE
+            WHEN team_member_proficiency.approval_flag = "A" || team_member_proficiency.approval_flag = "Y" THEN "Approved"
+            WHEN team_member_proficiency.approval_flag = "P" THEN "Pending"
+          END AS status
+        FROM
+          team_member_proficiency
+        JOIN
+          skill
+        ON
+          skill.skill_id = team_member_proficiency.skill_id
+        JOIN
+          team_member
+        ON
+          team_member.tm_id = team_member_proficiency.tm_id
+        JOIN
+          team_member tm_lead
+        ON
+          team_member.team_lead = tm_lead.tm_id;
+      `);
+      res.send({ isSuccess: true, data: result });
+    } catch (error) {
+      res.send({ isSuccess: false, data: err });
+    } finally {
+      // Release the connection
+      await connection.release();
+    }
+  });
+
+  // ****** END Get the Team Member DataList of skills status ******
 };

@@ -66,15 +66,13 @@ function SkillDialog(props) {
 
   const [years, setYears] = useState({});
   const [months, setMonths] = useState({});
-  const [lastUsed, setLastUsed] = useState("");
+  const [lastUsed, setLastUsed] = useState({});
 
   let { handleChangeValues } = props.parentState;
 
   const [remarks, setRemarks] = useState("");
   const [initialProficiency, setInitialProficiency] = useState({});
   const [profileInfo, setProfileInfo] = useState({});
-
-  // const [initialYears, setInitialYears] = useState({});
 
   useEffect(() => {
     if (!profile.tm_id) {
@@ -116,7 +114,6 @@ function SkillDialog(props) {
         setCurrSkill(skills.find((skill) => skill.skill_desc === description));
       }
     };
-    console.log(getTmTechInfo);
   }
 
   //Will appear when no skill found
@@ -150,7 +147,6 @@ function SkillDialog(props) {
   var skillProficiencyDataSet = {
     tm_id: tmInfo ? tmInfo.tm_id : null,
     skill_id: currSkill ? currSkill.skill_id : null,
-    years_experience: years ? years.years_experience : null,
 
     // job_profile_id: tmInfo ? tmInfo.job_profile_id : null,
     // team_id: tmInfo ? tmInfo.team_id : null,
@@ -181,10 +177,6 @@ function SkillDialog(props) {
       skillProficiencyDataSet.personal_rating = currProficiency
         ? currProficiency.proficiency_id
         : null;
-      skillProficiencyDataSet.years_experience = years;
-      skillProficiencyDataSet.andmonths_experience = months;
-      skillProficiencyDataSet.lastused_experience = lastUsed;
-
       createTmProficiency(skillProficiencyDataSet).then((res) =>
         getTmTechInfo({ email: tmInfo.email })
       );
@@ -225,7 +217,6 @@ function SkillDialog(props) {
         skillProficiencyDataSet.approved_by = null;
         skillProficiencyDataSet.date_approved = null;
         skillProficiencyDataSet.approval_flag = "P";
-        // task
       }
       updateTmProficiency(skillProficiencyDataSet).then((res) =>
         getTmTechInfo({ email: tmInfo.email })
@@ -298,7 +289,6 @@ function SkillDialog(props) {
                   id="personal_rating"
                   options={proficiencies}
                   value={currProficiency ? currProficiency : null}
-                  // disabled={isAction === "UPDATE" ? true : false}
                   getOptionSelected={(option, value) =>
                     value ? option.id === value.id : null
                   }
@@ -317,28 +307,22 @@ function SkillDialog(props) {
                   noOptionsText="No results found"
                 />
               </Grid>
+              {/* task  */}
               <Grid item xs={12}></Grid>
               <Grid item xs={12}>
-                <InputLabel htmlFor="rating">Duration of Experience</InputLabel>
+                <InputLabel htmlFor="rating">Years of Experience</InputLabel>
               </Grid>
               <Grid item xs={12}>
+                {/* year  */}
                 <TextField
                   type="number"
                   id="years_experience"
                   size="small"
                   label="Years"
                   variant="outlined"
-                  style={{
-                    width: "150px",
-                    marginRight: "25px",
-                    marginBottom: "25px",
-                  }}
-                  inputProps={{
-                    yrmin,
-                    yrmax,
-                    style: { textAlign: "center" },
-                  }}
-                  value={years}
+                  style={{ width: "150px", marginRight: "25px" }}
+                  inputProps={{ yrmin, yrmax, style: { textAlign: "center" } }}
+                  value={years ? years : null}
                   onChange={(e) => {
                     var value = parseInt(e.target.value);
 
@@ -348,17 +332,14 @@ function SkillDialog(props) {
                     setYears(value);
                   }}
                 />
+                {/* months  */}
                 <TextField
                   type="number"
                   id="andmonths_experience"
                   size="small"
                   variant="outlined"
                   label="Months"
-                  style={{
-                    width: "150px",
-                    marginRight: "25px",
-                    marginBottom: "25px",
-                  }}
+                  style={{ width: "150px", marginRight: "25px" }}
                   inputProps={{
                     mosmin,
                     mosmax,
@@ -374,7 +355,9 @@ function SkillDialog(props) {
                     setMonths(value);
                   }}
                 />
+                {/* lastused  */}
                 <TextField
+                  type="number"
                   id="lastused_experience"
                   size="small"
                   variant="outlined"
@@ -382,13 +365,12 @@ function SkillDialog(props) {
                   label="Last Used"
                   erorText="Please enter only 4 digits number"
                   value={lastUsed}
-                  onChange={(e) =>
-                    setLastUsed(e.target.value.toUpperCase().substring(0, 8))
-                  }
+                  onChange={(e) => setLastUsed(e.target.value.substring(0, 4))}
                   inputProps={{ style: { textAlign: "center" } }}
-                  helperText="e.g. FEB-2005"
+                  helperText="e.g. 2005"
                 />
               </Grid>
+              {/* task  */}
               {isApprove ? (
                 <>
                   <Grid item xs={12}></Grid>
@@ -431,11 +413,7 @@ function SkillDialog(props) {
             onClick={addProficiency}
             color="primary"
             autoFocus
-            disabled={
-              currProficiency && currSkill && years && months && lastUsed
-                ? false
-                : true
-            }
+            disabled={currProficiency && currSkill ? false : true}
           >
             Save
           </Button>
@@ -445,13 +423,10 @@ function SkillDialog(props) {
               onClick={updateSkill}
               color="primary"
               autoFocus
-              disabled={
-                currProficiency && years && months && lastUsed ? false : true
-              }
+              disabled={currProficiency ? false : true}
             >
               Update
             </Button>
-
             {!isApprove ? (
               <Button
                 onClick={() => {

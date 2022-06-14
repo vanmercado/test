@@ -7,12 +7,21 @@ import {
   InputLabel,
   MenuItem,
   Box,
+  Tab,
+  AppBar,
+  Button,
+  Tabs
 } from "@material-ui/core";
+import TabList from '@material-ui/lab/TabList';
+import TabPanel from '@material-ui/lab/TabPanel';
+import TabContext from '@material-ui/lab/TabContext';
 
 import { makeStyles } from "@material-ui/core";
 
-import LoginDashboard from "./LoginDashboard";
 import SkillsDashboard from "./SkillsDashboard";
+import FetureInfo from "./featureInfo/FetureInfo";
+import ActiveUsersDashboard from "./ActiveUsersDashboard";
+import TMSkillStatusDashboard from "./TMSkillStatusDashboard";
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -29,12 +38,16 @@ export default function Dashboard() {
   const handleDashboardOption = (event) => {
     setDashboardOption(event.target.value);
   };
-  const displayDashboard =
-    dashboardOption === "activeUsers" ? (
-      <LoginDashboard />
-    ) : (
-      <SkillsDashboard />
-    );
+
+  let displayDashboard = [];
+  if(dashboardOption === "activeUsers"){
+    displayDashboard = <ActiveUsersDashboard />
+  } else if (dashboardOption === "skills") {
+    displayDashboard = <SkillsDashboard />
+  } else {
+    displayDashboard = <TMSkillStatusDashboard/>
+  };
+
   return (
     <>
       <Grid container>
@@ -49,11 +62,30 @@ export default function Dashboard() {
             >
               <MenuItem value={"activeUsers"}>Active Users</MenuItem>
               <MenuItem value={"skills"}>Skills</MenuItem>
+              <MenuItem value={"status"}>Team Member Skill Status</MenuItem>
             </Select>
           </FormControl>
         </Grid>
       </Grid>
+
       <Box m={3}>{displayDashboard}</Box>
+      {/* <Box m={3}>
+        <TabContext value={dashboardOption}>
+            <Grid container align="center"
+            justifyContent="center">
+              <Grid item >
+                  <Tabs spacing={2} onChange={handleDashboardOption} aria-label="Dashboard List" buttonStyle={{ width: '200px' }}>
+                    <Tab label="Active User" value={"activeUsers"}/>
+                    <Tab label="Skills" value={"skills"}/>
+                  </Tabs>
+              </Grid>
+            </Grid>
+          <TabPanel value="activeUsers"><LoginDashboard/></TabPanel>
+          <TabPanel value="skills"><SkillsDashboard/></TabPanel>
+        </TabContext>
+      </Box> */}
+        
+      
     </>
   );
 }

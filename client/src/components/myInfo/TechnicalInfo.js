@@ -49,10 +49,6 @@ function TechnicalInfo(props) {
   const [currSkill, setCurrSkill] = useState("");
   const [currProficiency, setCurrProficiency] = useState("");
 
-  const [years, setYears] = useState({});
-  const [months, setMonths] = useState({});
-  const [lastUsed, setLastUsed] = useState("");
-
   useEffect(() => {
     if (profile || tmEmail) {
       getTmInfo({ email: tmEmail ? tmEmail : profile.email });
@@ -112,7 +108,7 @@ function TechnicalInfo(props) {
       },
     },
     {
-      name: "approval_flag",
+      name: "status",
       label: "Status",
       options: {
         filter: true,

@@ -67,7 +67,10 @@ module.exports = (app) => {
       SUBSTRING(team_member_proficiency.date_updated,
           1,
           10) AS date_updated,
-      team_member_proficiency.approval_flag,
+          CASE
+          WHEN team_member_proficiency.approval_flag = "A" || team_member_proficiency.approval_flag = "Y" THEN "Approved"
+          WHEN team_member_proficiency.approval_flag = "P" THEN "Pending"
+        END AS status,
       team_member_proficiency.approval_reason,
       CONCAT(team_member_proficiency.years_experience, " yr", " "  ,team_member_proficiency.andmonths_experience, " mos") AS duration_experience, 
       team_member_proficiency.lastused_experience,
@@ -107,6 +110,7 @@ module.exports = (app) => {
 
   app.post("/api/tm/position", async (req, res) => {
     // Create a connection to the database
+
     const connection = await careerCityMysql.connection();
     try {
       const result = await connection.query(`
@@ -470,11 +474,12 @@ module.exports = (app) => {
       SUBSTRING(team_member_proficiency.date_updated,
           1,
           10) AS date_updated,
-      team_member_proficiency.approval_flag,
+          CASE
+          WHEN team_member_proficiency.approval_flag = "A" || team_member_proficiency.approval_flag = "Y" THEN "Approved"
+          WHEN team_member_proficiency.approval_flag = "P" THEN "Pending"
+        END AS status,
       team_member_proficiency.approval_reason,
-      CONCAT(team_member_proficiency.years_experience, " yrs", " "  ,team_member_proficiency.andmonths_experience, " mos") AS duration_experience,  
-      team_member_proficiency.years_experience,
-      team_member_proficiency.andmonths_experience, 
+      CONCAT(team_member_proficiency.years_experience, " yrs", " "  ,team_member_proficiency.andmonths_experience, " mos") AS duration_experience,   
       team_member_proficiency.lastused_experience,
       team_member.email,
       team_member.tm_name,
@@ -642,27 +647,5 @@ module.exports = (app) => {
     }
   );
 
-  app.get("/api/tm/getIdealSkillSet/:email", async (req, res) => {
-    // Create a connection to the database
-    const connection = await skillsMatrixMysql.connection();
 
-    try {
-      const result = await connection.query(`
-        SELECT s.skill_id AS id, s.skill_desc AS skillname
-          FROM team_member AS tm
-            LEFT JOIN ideal_proficiency AS ip
-              ON tm.job_profile_id = ip.job_profile_id
-            LEFT JOIN skill AS s
-              ON s.skill_id = ip.skill_id
-          WHERE ip.job_category_id = 0 AND tm.email = '${req.params.email}' 
-          ORDER BY s.skill_desc;
-      `);
-      res.send({ isSuccess: true, data: result });
-    } catch (error) {
-      res.send({ isSuccess: false, data: err });
-    } finally {
-      // Release the connection
-      await connection.release();
-    }
-  });
 };

@@ -13,16 +13,7 @@ import {
 //#endregion
 
 const ApproveButton = (props) => {
-  const {
-    getTmInfo,
-    tmInfo,
-    profile,
-    tmp_id,
-    skill_id,
-    skill_desc,
-    proficiency_id,
-    proficiency_desc,
-  } = props;
+  const { getTmInfo, tmInfo, profile, tmp_id, skill_id, skill_desc } = props;
 
   useEffect(() => {
     getTmInfo({ email: profile.email });
@@ -41,8 +32,6 @@ const ApproveButton = (props) => {
     currProficiency,
     setCurrProficiency,
     tmp_id,
-    // task
-    // currProficiency: { proficiency_id, proficiency_desc },
   };
 
   return (

@@ -23,7 +23,7 @@ let dbConfig = {
   connectionLimit: 10,
   host: "localhost",
   user: "root",
-  password: "telus@mysql",
+  password: "101800",
   database: "skills_matrix",
 };
 
